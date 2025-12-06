@@ -3,11 +3,12 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { useAuth } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 
-// Pages (we'll create these next)
+// Pages
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import AdminDashboard from './pages/AdminDashboard';
+import AiChat from './pages/AiChat';
 
 function App() {
     const { isAuthenticated } = useAuth();
@@ -44,6 +45,14 @@ function App() {
                         element={
                             <ProtectedRoute>
                                 <AdminDashboard />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="/ai-chat"
+                        element={
+                            <ProtectedRoute>
+                                <AiChat />
                             </ProtectedRoute>
                         }
                     />

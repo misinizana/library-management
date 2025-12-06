@@ -6,6 +6,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from .models import Book, User
 from .serializers import BookSerializer, BookCreateUpdateSerializer, UserSerializer, UserDetailSerializer
+from .llm_service.sql_service import process_query
 from django.db.models import Count, Avg
 from django.utils import timezone
 from datetime import timedelta
@@ -220,3 +221,45 @@ def admin_get_analytics(request):
         'popular_books': list(popular_books),
         'recent_activity': recent_activity
     })
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def ai_query(request):
+    """
+    AI-powered natural language query endpoint
+    
+    Accepts a natural language question and returns:
+    - Generated SQL query
+    - Query results
+    - Natural language formatted answer
+    
+    Users can only query their own data.
+    Admins can query all data.
+    """
+    question = request.data.get('question', '').strip()
+    
+    if not question:
+        return Response(
+            {'error': 'Question is required'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    
+    # Process the query through LLM service
+    result = process_query(question, request.user)
+    
+    if result['success']:
+        return Response({
+            'question': question,
+            'sql': result['sql'],
+            'results': result['results'],
+            'answer': result['answer']
+        })
+    else:
+        return Response(
+            {
+                'error': result['error'],
+                'sql': result['sql']
+            },
+            status=status.HTTP_400_BAD_REQUEST
+        )

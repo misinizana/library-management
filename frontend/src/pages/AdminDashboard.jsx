@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import Navbar from '../components/Navbar';
 import { 
     adminGetAllUsers,
     adminGetUserDetail,
@@ -196,21 +197,13 @@ const AdminDashboard = () => {
     if (loading) return <div style={{ padding: '20px' }}>Loading...</div>;
 
     return (
+    <div>
+        <Navbar />
+        
         <div style={{ padding: '20px', maxWidth: '1200px', margin: '0 auto' }}>
-            {/* Header */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}>
-                <h1>Admin Dashboard</h1>
-                <div>
-                    <button 
-                        onClick={() => navigate('/dashboard')}
-                        style={{ marginRight: '10px', padding: '8px 16px', cursor: 'pointer' }}
-                    >
-                        My Library
-                    </button>
-                    <span style={{ marginRight: '20px' }}>Admin: {user?.username}</span>
-                    <button onClick={logout}>Logout</button>
-                </div>
-            </div>
+            <h1>Admin Dashboard</h1>
+        
+        </div>
 
             {error && <div style={{ color: 'red', marginBottom: '10px' }}>{error}</div>}
 
