@@ -41,3 +41,74 @@ class Book(models.Model):
     
     def __str__(self):
         return f"{self.title} by {self.author}"
+    
+
+class Conversation(models.Model):
+    """
+    Represents a conversation/chat session between user and AI
+    """
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='conversations'
+    )
+    title = models.CharField(
+        max_length=200,
+        default='New Conversation'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['-updated_at']  # Most recently updated first
+        verbose_name = 'Conversation'
+        verbose_name_plural = 'Conversations'
+        indexes = [
+            models.Index(fields=['user', '-updated_at']),
+        ]
+    
+    def __str__(self):
+        return f"{self.user.username} - {self.title} ({self.updated_at.strftime('%Y-%m-%d %H:%M')})"
+    
+    def message_count(self):
+        """Returns number of messages in this conversation"""
+        return self.messages.count()
+
+
+class ChatMessage(models.Model):
+    """
+    Individual message in a conversation (user question or AI response)
+    """
+    ROLE_CHOICES = [
+        ('user', 'User'),
+        ('assistant', 'Assistant'),
+    ]
+    
+    conversation = models.ForeignKey(
+        Conversation,
+        on_delete=models.CASCADE,
+        related_name='messages'
+    )
+    role = models.CharField(
+        max_length=10,
+        choices=ROLE_CHOICES
+    )
+    content = models.TextField()
+    
+    # These fields only populated for assistant messages
+    sql_query = models.TextField(null=True, blank=True)
+    results = models.JSONField(null=True, blank=True)
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        ordering = ['created_at']  # Chronological order
+        verbose_name = 'Chat Message'
+        verbose_name_plural = 'Chat Messages'
+        indexes = [
+            models.Index(fields=['conversation', 'created_at']),
+        ]
+    
+    def __str__(self):
+        preview = self.content[:50] + '...' if len(self.content) > 50 else self.content
+        return f"[{self.role}] {preview}"

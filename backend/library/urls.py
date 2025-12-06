@@ -11,7 +11,10 @@ from .views import (
     admin_delete_user,
     search_books_external,
     admin_get_analytics,
-    ai_query
+    conversation_list,           
+    conversation_detail,         
+    send_message,               
+    clear_all_conversations      
 )
 
 router = DefaultRouter()
@@ -21,8 +24,14 @@ urlpatterns = [
     # Search endpoint
     path('books/search/', search_books_external, name='search-books'),
     
-    # AI Query endpoint
-    path('ai/query/', ai_query, name='ai-query'),  # Add this
+    # AI Query endpoint (keep for backwards compatibility, but we'll use conversations now)
+    # path('ai/query/', ai_query, name='ai-query'),
+    
+    # Conversation endpoints
+    path('conversations/', conversation_list, name='conversation-list'),
+    path('conversations/<int:pk>/', conversation_detail, name='conversation-detail'),
+    path('conversations/<int:pk>/message/', send_message, name='send-message'),
+    path('conversations/clear/', clear_all_conversations, name='clear-conversations'),
     
     # Admin - Books
     path('admin/books/', admin_get_all_books, name='admin-books'),
@@ -40,4 +49,4 @@ urlpatterns = [
     
     # Router (this goes last)
     path('', include(router.urls)),
-]
+]  

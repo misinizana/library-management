@@ -1,0 +1,23 @@
+today 06/12/2025
+
+- add better handling for user specific questions
+- add better handling for when user says "me" (admin and normal user)
+- add context to chats - done
+- add database table with chat history - done
+- display chat history to ui - done
+- remove emojis all around
+- fix navbar to display the username in adifferent way and everything else should have a more uniform color
+- add navbar to ai chat - done 
+- see what happened to admindashboard width
+- make analytics cards pop
+- format the text better so that it shows up as it should, and not the table from the raw sql but like a table provided by gpt probably, but add as extra not deleting stuff we  already have
+- if i have no more funds, let the error say that
+- technology to truncate context after 10 messages
+
+tomorrow 07/12/2025:
+
+- fix overall ui feel
+- create readme file (quick to read and meaningful - mention business impact of analytics page)
+- docker
+- create maybe seeders
+- deploy the app

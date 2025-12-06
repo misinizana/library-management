@@ -110,8 +110,33 @@ export const adminGetAnalytics = async () => {
     return response.data;
 };
 
-export const aiQuery = async (question) => {
-    const response = await api.post('/ai/query/', { question });
+export const getConversations = async () => {
+    const response = await api.get('/conversations/');
+    return response.data;
+};
+
+export const createConversation = async (title = 'New Conversation') => {
+    const response = await api.post('/conversations/', { title });
+    return response.data;
+};
+
+export const getConversation = async (id) => {
+    const response = await api.get(`/conversations/${id}/`);
+    return response.data;
+};
+
+export const deleteConversation = async (id) => {
+    const response = await api.delete(`/conversations/${id}/`);
+    return response.data;
+};
+
+export const sendMessage = async (conversationId, content) => {
+    const response = await api.post(`/conversations/${conversationId}/message/`, { content });
+    return response.data;
+};
+
+export const clearAllConversations = async () => {
+    const response = await api.delete('/conversations/clear/');
     return response.data;
 };
 

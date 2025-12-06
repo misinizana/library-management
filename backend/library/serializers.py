@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import User, Book
+from .models import User, Book, Conversation, ChatMessage 
 
 class UserSerializer(serializers.ModelSerializer):
     """Serializer for User model"""
@@ -44,3 +44,38 @@ class UserDetailSerializer(serializers.ModelSerializer):
             'books_completed': books.filter(status='completed').count(),
             'books_to_read': books.filter(status='to_read').count(),
         }
+
+class ChatMessageSerializer(serializers.ModelSerializer):
+    """Serializer for individual chat messages"""
+    
+    class Meta:
+        model = ChatMessage
+        fields = ['id', 'role', 'content', 'sql_query', 'results', 'created_at']
+        read_only_fields = ['id', 'created_at']
+
+
+class ConversationListSerializer(serializers.ModelSerializer):
+    """Serializer for listing conversations (without messages)"""
+    message_count = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = Conversation
+        fields = ['id', 'title', 'message_count', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'created_at', 'updated_at']
+    
+    def get_message_count(self, obj):
+        return obj.messages.count()
+
+
+class ConversationDetailSerializer(serializers.ModelSerializer):
+    """Serializer for single conversation with all messages"""
+    messages = ChatMessageSerializer(many=True, read_only=True)
+    message_count = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = Conversation
+        fields = ['id', 'title', 'message_count', 'created_at', 'updated_at', 'messages']
+        read_only_fields = ['id', 'created_at', 'updated_at']
+    
+    def get_message_count(self, obj):
+        return obj.messages.count()

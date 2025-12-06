@@ -4,9 +4,17 @@ from rest_framework import viewsets, permissions, status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
-from .models import Book, User
-from .serializers import BookSerializer, BookCreateUpdateSerializer, UserSerializer, UserDetailSerializer
-from .llm_service.sql_service import process_query
+from .models import Book, User, ChatMessage, Conversation  
+from .serializers import (
+    BookSerializer, 
+    BookCreateUpdateSerializer, 
+    UserSerializer, 
+    UserDetailSerializer, 
+    ChatMessageSerializer,           
+    ConversationListSerializer,      
+    ConversationDetailSerializer 
+)
+from .llm_service.sql_service import process_query_with_context
 from django.db.models import Count, Avg
 from django.utils import timezone
 from datetime import timedelta
@@ -223,43 +231,144 @@ def admin_get_analytics(request):
     })
 
 
+################################# AI ENDPOINTS #################################
+
+# ============== CONVERSATION ENDPOINTS ==============
+
+@api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated])
+def conversation_list(request):
+    """
+    GET: List all user's conversations
+    POST: Create new conversation
+    """
+    if request.method == 'GET':
+        conversations = Conversation.objects.filter(user=request.user)
+        serializer = ConversationListSerializer(conversations, many=True)
+        return Response(serializer.data)
+    
+    elif request.method == 'POST':
+        # Create new conversation
+        conversation = Conversation.objects.create(
+            user=request.user,
+            title=request.data.get('title', 'New Conversation')
+        )
+        serializer = ConversationDetailSerializer(conversation)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+@api_view(['GET', 'DELETE'])
+@permission_classes([IsAuthenticated])
+def conversation_detail(request, pk):
+    """
+    GET: Get single conversation with all messages
+    DELETE: Delete conversation
+    """
+    try:
+        conversation = Conversation.objects.get(pk=pk, user=request.user)
+    except Conversation.DoesNotExist:
+        return Response(
+            {'error': 'Conversation not found'},
+            status=status.HTTP_404_NOT_FOUND
+        )
+    
+    if request.method == 'GET':
+        serializer = ConversationDetailSerializer(conversation)
+        return Response(serializer.data)
+    
+    elif request.method == 'DELETE':
+        conversation.delete()
+        return Response(
+            {'message': 'Conversation deleted successfully'},
+            status=status.HTTP_204_NO_CONTENT
+        )
+
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
-def ai_query(request):
+def send_message(request, pk):
     """
-    AI-powered natural language query endpoint
-    
-    Accepts a natural language question and returns:
-    - Generated SQL query
-    - Query results
-    - Natural language formatted answer
-    
-    Users can only query their own data.
-    Admins can query all data.
+    Send a message in a conversation (user question)
+    Processes with AI and returns assistant response
     """
-    question = request.data.get('question', '').strip()
-    
-    if not question:
+    try:
+        conversation = Conversation.objects.get(pk=pk, user=request.user)
+    except Conversation.DoesNotExist:
         return Response(
-            {'error': 'Question is required'},
+            {'error': 'Conversation not found'},
+            status=status.HTTP_404_NOT_FOUND
+        )
+    
+    user_message = request.data.get('content', '').strip()
+    
+    if not user_message:
+        return Response(
+            {'error': 'Message content is required'},
             status=status.HTTP_400_BAD_REQUEST
         )
     
-    # Process the query through LLM service
-    result = process_query(question, request.user)
+    # Create user message
+    user_msg = ChatMessage.objects.create(
+        conversation=conversation,
+        role='user',
+        content=user_message
+    )
+    
+    # Build conversation context from last 20 messages (excluding system prompt)
+    messages = conversation.messages.all().order_by('-created_at')[:20]
+    messages = reversed(messages)  # Now oldest to newest
+    
+    conversation_context = []
+    for msg in messages:
+        conversation_context.append({
+            'role': msg.role,
+            'content': msg.content
+        })
+    
+    # Process with AI (system prompt added automatically in sql_service.py)
+    result = process_query_with_context(conversation_context, request.user)
     
     if result['success']:
-        return Response({
-            'question': question,
-            'sql': result['sql'],
-            'results': result['results'],
-            'answer': result['answer']
-        })
-    else:
-        return Response(
-            {
-                'error': result['error'],
-                'sql': result['sql']
-            },
-            status=status.HTTP_400_BAD_REQUEST
+        # Create assistant message
+        assistant_message = ChatMessage.objects.create(
+            conversation=conversation,
+            role='assistant',
+            content=result['answer'],
+            sql_query=result['sql'],
+            results=result['results']
         )
+        
+        # Update conversation title if this is the first exchange
+        if conversation.messages.count() == 2:  # 1 user + 1 assistant = first exchange
+            conversation.title = user_message[:50] + ('...' if len(user_message) > 50 else '')
+            conversation.save()
+        
+        # Return the assistant message
+        serializer = ChatMessageSerializer(assistant_message)
+        return Response(serializer.data)
+    else:
+        # Create an assistant error message so user sees it in the chat
+        error_content = f"I apologize, but that request cannot be completed:\n\n{result['error']}\n\nPlease try rephrasing your question or ask something else!"
+        
+        assistant_message = ChatMessage.objects.create(
+            conversation=conversation,
+            role='assistant',
+            content=error_content,
+            sql_query=result.get('sql'),  # Include the attempted SQL if available
+            results=None
+        )
+        
+        serializer = ChatMessageSerializer(assistant_message)
+        return Response(serializer.data)
+
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def clear_all_conversations(request):
+    """
+    Delete all conversations for the current user
+    """
+    count = Conversation.objects.filter(user=request.user).count()
+    Conversation.objects.filter(user=request.user).delete()
+    return Response({
+        'message': f'Successfully deleted {count} conversation(s)'
+    })
