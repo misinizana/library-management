@@ -186,7 +186,7 @@ const Dashboard = () => {
                                 cursor: 'pointer'
                             }}
                         >
-                            🔍 Search Books Online
+                               Search Books Online
                         </button>
                         <button 
                             onClick={() => setShowForm(true)}
@@ -198,7 +198,7 @@ const Dashboard = () => {
                                 cursor: 'pointer'
                             }}
                         >
-                            ➕ Add Book Manually
+                               Add Book Manually
                         </button>
                     </div>
                 )}

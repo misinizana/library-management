@@ -88,7 +88,7 @@ const Navbar = () => {
                         }
                     }}
                 >
-                    🤖 AI Chat
+                       AI Chat
                 </button>
 
                 {/* Admin Dashboard (only for admins) */}

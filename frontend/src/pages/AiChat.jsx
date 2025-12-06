@@ -9,6 +9,7 @@ import {
     clearAllConversations 
 } from '../services/api';
 import Navbar from '../components/Navbar';
+import ConfirmDialog from '../components/ConfirmDialog';
 
 const AiChat = () => {
     // Sidebar state
@@ -24,6 +25,13 @@ const AiChat = () => {
     const [loadingConversations, setLoadingConversations] = useState(true);
     const [sendingMessage, setSendingMessage] = useState(false);
     const [error, setError] = useState('');
+
+    const [confirmDialog, setConfirmDialog] = useState({
+        isOpen: false,
+        title: '',
+        message: '',
+        onConfirm: () => {}
+    });
 
     const { user } = useAuth();
 
@@ -246,35 +254,49 @@ const AiChat = () => {
     const handleDeleteConversation = async (id, e) => {
         e.stopPropagation();
         
-        if (!window.confirm('Delete this conversation?')) return;
-
-        try {
-            await deleteConversation(id);
-            setConversations(prev => prev.filter(c => c.id !== id));
-            
-            if (activeConversationId === id) {
-                setActiveConversationId(null);
-                setCurrentMessages([]);
+        setConfirmDialog({
+            isOpen: true,
+            title: 'Delete Conversation?',
+            message: 'Are you sure you want to delete this conversation? This action cannot be undone.',
+            onConfirm: async () => {
+                try {
+                    await deleteConversation(id);
+                    setConversations(prev => prev.filter(c => c.id !== id));
+                    
+                    if (activeConversationId === id) {
+                        setActiveConversationId(null);
+                        setCurrentMessages([]);
+                    }
+                    setConfirmDialog({ ...confirmDialog, isOpen: false });
+                } catch (err) {
+                    setError('Failed to delete conversation');
+                    console.error(err);
+                    setConfirmDialog({ ...confirmDialog, isOpen: false });
+                }
             }
-        } catch (err) {
-            setError('Failed to delete conversation');
-            console.error(err);
-        }
+        });
     };
 
     // Clear all conversations
     const handleClearAll = async () => {
-        if (!window.confirm('Delete all conversations? This cannot be undone.')) return;
-
-        try {
-            await clearAllConversations();
-            setConversations([]);
-            setActiveConversationId(null);
-            setCurrentMessages([]);
-        } catch (err) {
-            setError('Failed to clear conversations');
-            console.error(err);
-        }
+        setConfirmDialog({
+            isOpen: true,
+            title: 'Clear All Conversations?',
+            message: 'Are you sure you want to delete all conversations? This action cannot be undone and will permanently remove all your chat history.',
+            onConfirm: async () => {
+                try {
+                    await clearAllConversations();
+                    setConversations([]);
+                    setActiveConversationId(null);
+                    setCurrentMessages([]);
+                    setConfirmDialog({ ...confirmDialog, isOpen: false });
+                } catch (err) {
+                    setError('Failed to clear conversations');
+                    console.error(err);
+                    setConfirmDialog({ ...confirmDialog, isOpen: false });
+                }
+            }
+        });
     };
 
     const handleExampleClick = async (exampleQuestion) => {
@@ -297,6 +319,14 @@ const AiChat = () => {
     return (
         <div>
             <Navbar />
+
+            <ConfirmDialog
+                isOpen={confirmDialog.isOpen}
+                title={confirmDialog.title}
+                message={confirmDialog.message}
+                onConfirm={confirmDialog.onConfirm}
+                onCancel={() => setConfirmDialog({ ...confirmDialog, isOpen: false })}
+            />
             
             <div style={{ display: 'flex', height: 'calc(100vh - 60px)' }}>
                 {/* Sidebar */}
