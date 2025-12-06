@@ -1,10 +1,14 @@
 from django.shortcuts import render
+import requests
 from rest_framework import viewsets, permissions, status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from .models import Book, User
-from .serializers import BookSerializer, BookCreateUpdateSerializer, UserSerializer
+from .serializers import BookSerializer, BookCreateUpdateSerializer, UserSerializer, UserDetailSerializer
+from django.db.models import Count, Avg
+from django.utils import timezone
+from datetime import timedelta
 
 class BookViewSet(viewsets.ModelViewSet):
     """
@@ -53,6 +57,22 @@ def admin_delete_book(request, pk):
     except Book.DoesNotExist:
         return Response({'error': 'Book not found'}, status=status.HTTP_404_NOT_FOUND)
 
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated, IsAdmin])
+def admin_update_book(request, pk):
+    """Update any book (admin only)"""
+    try:
+        book = Book.objects.get(pk=pk)
+        serializer = BookCreateUpdateSerializer(book, data=request.data, partial=True)
+        
+        if serializer.is_valid():
+            serializer.save()
+            return Response(BookSerializer(book).data)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    except Book.DoesNotExist:
+        return Response({'error': 'Book not found'}, status=status.HTTP_404_NOT_FOUND)
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated, IsAdmin])
 def admin_get_all_users(request):
@@ -60,6 +80,37 @@ def admin_get_all_users(request):
     users = User.objects.all()
     serializer = UserSerializer(users, many=True)
     return Response(serializer.data)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated, IsAdmin])
+def admin_get_user_detail(request, pk):
+    """Get detailed user info with their books and stats (admin only)"""
+    try:
+        user = User.objects.get(pk=pk)
+        serializer = UserDetailSerializer(user)
+        return Response(serializer.data)
+    except User.DoesNotExist:
+        return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated, IsAdmin])
+def admin_update_user(request, pk):
+    """Update user info (admin only)"""
+    try:
+        user = User.objects.get(pk=pk)
+        
+        user.username = request.data.get('username', user.username)
+        user.email = request.data.get('email', user.email)
+        user.is_admin = request.data.get('is_admin', user.is_admin)
+        
+        user.save()
+        
+        serializer = UserSerializer(user)
+        return Response(serializer.data)
+    except User.DoesNotExist:
+        return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated, IsAdmin])
@@ -73,3 +124,99 @@ def admin_delete_user(request, pk):
         return Response({'message': 'User deleted successfully'}, status=status.HTTP_204_NO_CONTENT)
     except User.DoesNotExist:
         return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+    
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def search_books_external(request):
+    """Search books using Google Books API"""
+    query = request.GET.get('q', '')
+    
+    if not query:
+        return Response({'error': 'Query parameter required'}, status=400)
+    
+    try:
+        url = f'https://www.googleapis.com/books/v1/volumes?q={query}&maxResults=20'
+        response = requests.get(url, verify=False)
+        data = response.json()
+        
+        books = []
+        for item in data.get('items', []):
+            volume_info = item.get('volumeInfo', {})
+            
+            book = {
+                'google_id': item.get('id'),
+                'title': volume_info.get('title', 'Unknown Title'),
+                'authors': volume_info.get('authors', ['Unknown Author']),
+                'author': ', '.join(volume_info.get('authors', ['Unknown Author'])),
+                'description': volume_info.get('description', ''),
+                'cover_image': volume_info.get('imageLinks', {}).get('thumbnail', ''),
+                'published_date': volume_info.get('publishedDate', ''),
+                'page_count': volume_info.get('pageCount', 0),
+                'categories': volume_info.get('categories', []),
+            }
+            books.append(book)
+        
+        return Response({'results': books})
+        
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return Response({'error': str(e)}, status=500)
+    
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated, IsAdmin])
+def admin_get_analytics(request):
+    """Get analytics data for admin dashboard"""
+    
+    # Summary Stats
+    total_users = User.objects.count()
+    active_users = User.objects.annotate(book_count=Count('books')).filter(book_count__gt=0).count()
+    total_books = Book.objects.count()
+    avg_books = Book.objects.values('user').annotate(count=Count('id')).aggregate(Avg('count'))['count__avg'] or 0
+    
+    # Books Added Over Time (last 30 days)
+    thirty_days_ago = timezone.now() - timedelta(days=30)
+    books_over_time = Book.objects.filter(created_at__gte=thirty_days_ago) \
+        .extra(select={'date': 'DATE(created_at)'}) \
+        .values('date') \
+        .annotate(count=Count('id')) \
+        .order_by('date')
+    
+    # Genre Distribution
+    genre_distribution = Book.objects.values('genre') \
+        .annotate(count=Count('id')) \
+        .order_by('-count')
+    
+    # Popular Books (owned by 2+ users)
+    popular_books = Book.objects.values('title', 'author') \
+        .annotate(user_count=Count('user', distinct=True)) \
+        .filter(user_count__gt=1) \
+        .order_by('-user_count')[:10]
+    
+    # Recent Activity (last 10 books)
+    recent_books = Book.objects.select_related('user').order_by('-created_at')[:10]
+    recent_activity = [
+        {
+            'id': book.id,
+            'title': book.title,
+            'author': book.author,
+            'username': book.user.username,
+            'added_at': book.created_at
+        }
+        for book in recent_books
+    ]
+    
+    return Response({
+        'summary': {
+            'total_users': total_users,
+            'active_users': active_users,
+            'total_books': total_books,
+            'avg_books_per_user': round(avg_books, 2)
+        },
+        'books_over_time': list(books_over_time),
+        'genre_distribution': list(genre_distribution),
+        'popular_books': list(popular_books),
+        'recent_activity': recent_activity
+    })

@@ -62,14 +62,15 @@ export const deleteBook = async (id) => {
     return response.data;
 };
 
-// Admin APIs
-export const adminGetAllBooks = async () => {
-    const response = await api.get('/admin/books/');
+// Book Search
+export const searchBooksExternal = async (query) => {
+    const response = await api.get(`/books/search/?q=${query}`);
     return response.data;
 };
 
-export const adminGetAllUsers = async () => {
-    const response = await api.get('/admin/users/');
+// Admin - Books
+export const adminGetAllBooks = async () => {
+    const response = await api.get('/admin/books/');
     return response.data;
 };
 
@@ -78,8 +79,34 @@ export const adminDeleteBook = async (id) => {
     return response.data;
 };
 
+export const adminUpdateBook = async (id, bookData) => {
+    const response = await api.put(`/admin/books/${id}/update/`, bookData);
+    return response.data;
+};
+
+// Admin - Users
+export const adminGetAllUsers = async () => {
+    const response = await api.get('/admin/users/');
+    return response.data;
+};
+
+export const adminGetUserDetail = async (id) => {
+    const response = await api.get(`/admin/users/${id}/`);
+    return response.data;
+};
+
+export const adminUpdateUser = async (id, userData) => {
+    const response = await api.put(`/admin/users/${id}/update/`, userData);
+    return response.data;
+};
+
 export const adminDeleteUser = async (id) => {
-    const response = await api.delete(`/admin/users/${id}/`);
+    const response = await api.delete(`/admin/users/${id}/delete/`);
+    return response.data;
+};
+
+export const adminGetAnalytics = async () => {
+    const response = await api.get('/admin/analytics/');
     return response.data;
 };
 
