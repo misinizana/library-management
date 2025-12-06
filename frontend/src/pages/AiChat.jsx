@@ -394,7 +394,7 @@ const AiChat = () => {
                                     }}
                                 >
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                                        <div style={{ flex: 1, paddingRight: '10px' }}>
+                                        <div style={{ flex: 1, paddingRight: '10px', minWidth: 0 }}>
                                             <p style={{ 
                                                 margin: '0 0 5px 0', 
                                                 fontWeight: '500',
@@ -403,12 +403,15 @@ const AiChat = () => {
                                                 textOverflow: 'ellipsis',
                                                 whiteSpace: 'nowrap'
                                             }}>
-                                                📝 {conv.title}
+                                                {conv.title}
                                             </p>
                                             <p style={{ 
                                                 margin: 0, 
                                                 fontSize: '12px', 
-                                                color: '#666' 
+                                                color: '#666' ,
+                                                overflow: 'hidden',
+                                                textOverflow: 'ellipsis',
+                                                whiteSpace: 'nowrap'
                                             }}>
                                                 {formatTimestamp(conv.updated_at)} • {conv.message_count} msgs
                                             </p>
@@ -423,7 +426,8 @@ const AiChat = () => {
                                                 fontSize: '18px',
                                                 padding: '0',
                                                 width: '24px',
-                                                height: '24px'
+                                                height: '24px',
+                                                flexShrink: 0
                                             }}
                                             title="Delete conversation"
                                         >
@@ -451,7 +455,7 @@ const AiChat = () => {
                                     fontSize: '14px'
                                 }}
                             >
-                                🗑️ Clear All
+                                Clear All
                             </button>
                         </div>
                     )}
@@ -479,7 +483,7 @@ const AiChat = () => {
                                 padding: '60px 20px',
                                 color: '#666'
                             }}>
-                                <h2>🤖 AI Assistant</h2>
+                                <h2>   AI Assistant</h2>
                                 <p>Ask me anything about {user?.is_admin ? 'the library system' : 'your library'}!</p>
                                 
                                 {/* Example Questions */}

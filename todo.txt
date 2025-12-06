@@ -2,9 +2,8 @@ today 06/12/2025
 
 - add better handling for user specific questions
 - add better handling for when user says "me" (admin and normal user)
-- remove emojis all around
 - format the text better so that it shows up as it should, and not the table from the raw sql but like a table provided by gpt probably, but add as extra not deleting stuff we  already have
-- if i have no more funds, let the error say that
+
 
 tomorrow 07/12/2025:
 

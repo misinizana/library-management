@@ -49,7 +49,11 @@ const Navbar = () => {
                 alignItems: 'center',
                 gap: '10px'
             }}>
-                <span>📚</span>
+                <img 
+                    src="/library_icon.png" 
+                    alt="Library Icon" 
+                    style={{ height: '25px', width: 'auto' }} // Adjust size as needed
+                />
                 <span>Library Management</span>
             </div>
 
@@ -133,7 +137,11 @@ const Navbar = () => {
                     gap: '8px',
                     border: '1px solid #bdc3c7'
                 }}>
-                    <span style={{ fontSize: '16px' }}>👤</span>
+                    <img 
+                    src="/user_icon.png" 
+                    alt="User Icon" 
+                    style={{ height: '25px', width: 'auto' }} // Adjust size as needed
+                />
                     <span>Welcome, {user?.username}</span>
                 </div>
 
