@@ -32,3 +32,11 @@ technologies used:
 how the project is separated:
 	- front and back
 	- ...
+
+how to start:
+	- take .env.example
+	- go to settings to database
+	- 
+
+
+xg9eem$0^msxq%g2xy@i6a!hf)dw66&c0)6491dx&h8-=sikdb - production secret key

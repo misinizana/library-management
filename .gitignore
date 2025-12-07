@@ -7,6 +7,7 @@ backend/*.pyo
 backend/db.sqlite3
 backend/*.log
 backend/.env
+backend/staticfiles/  # ADD THIS - important for Django static files
 
 # Frontend (React)
 frontend/node_modules/
@@ -33,4 +34,4 @@ Thumbs.db
 
 # Misc
 *.log
-.env
+.env  # This is redundant since you have backend/.env and frontend/.env
