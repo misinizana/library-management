@@ -138,6 +138,7 @@ STATIC_URL = 'static/'
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://localhost:5173",  
+    'https://unrivaled-starburst-8d4d54.netlify.app',
 ]
 
 REST_FRAMEWORK = {
