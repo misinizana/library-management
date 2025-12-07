@@ -244,7 +244,7 @@ const Dashboard = () => {
                                 borderRadius: '5px'
                             }}
                         >
-                               Search Books Online
+                            🔍 Search Books Online
                         </button>
                         <button 
                             onClick={() => setShowForm(true)}
@@ -687,94 +687,225 @@ const Dashboard = () => {
                 ) : filteredBooks.length === 0 ? (
                     <p>No books yet. Search for books online or add one manually!</p>
                 ) : (
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '20px' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '25px' }}>
                         {filteredBooks.map((book) => (
                             <div 
                                 key={book.id} 
                                 style={{ 
-                                    border: '1px solid #ddd', 
-                                    padding: '15px', 
-                                    borderRadius: '8px',
+                                    position: 'relative',
+                                    border: 'none',
+                                    padding: '0',
+                                    borderRadius: '12px',
                                     backgroundColor: 'white',
-                                    transition: 'transform 0.2s, box-shadow 0.2s'
+                                    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.07)',
+                                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                                    overflow: 'hidden'
                                 }}
                                 onMouseEnter={(e) => {
-                                    e.currentTarget.style.transform = 'translateY(-5px)';
-                                    e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)';
+                                    e.currentTarget.style.transform = 'translateY(-8px) scale(1.02)';
+                                    e.currentTarget.style.boxShadow = '0 20px 40px rgba(0, 0, 0, 0.15)';
                                 }}
                                 onMouseLeave={(e) => {
-                                    e.currentTarget.style.transform = 'translateY(0)';
-                                    e.currentTarget.style.boxShadow = 'none';
+                                    e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                                    e.currentTarget.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.07)';
                                 }}
                             >
-                                {book.cover_image && (
-                                    <img 
-                                        src={book.cover_image} 
-                                        alt={book.title}
-                                        style={{ width: '100%', height: '300px', objectFit: 'cover', marginBottom: '10px', borderRadius: '5px' }}
-                                    />
-                                )}
-                                <h3 style={{ fontSize: '18px', marginBottom: '8px' }}>{book.title}</h3>
-                                <p style={{ marginBottom: '5px' }}><strong>Author:</strong> {book.author}</p>
-                                <p style={{ marginBottom: '5px' }}>
-                                    <strong>Genre:</strong>{' '}
-                                    <span style={{
-                                        backgroundColor: '#e7f3ff',
-                                        padding: '3px 8px',
-                                        borderRadius: '4px',
-                                        fontSize: '13px'
-                                    }}>
-                                        {book.genre.replace('_', ' ')}
-                                    </span>
-                                </p>
-                                <p style={{ marginBottom: '5px' }}>
-                                    <strong>Status:</strong>{' '}
-                                    <span style={{
+                                {/* Image Container with Gradient Overlay */}
+                                <div style={{ position: 'relative', overflow: 'hidden' }}>
+                                    {book.cover_image ? (
+                                        <>
+                                            <img 
+                                                src={book.cover_image} 
+                                                alt={book.title}
+                                                style={{ 
+                                                    width: '100%', 
+                                                    height: '350px', 
+                                                    objectFit: 'cover',
+                                                    transition: 'transform 0.3s ease'
+                                                }}
+                                                onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
+                                                onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                                            />
+                                            {/* Gradient overlay at bottom */}
+                                            <div style={{
+                                                position: 'absolute',
+                                                bottom: 0,
+                                                left: 0,
+                                                right: 0,
+                                                height: '100px',
+                                                background: 'linear-gradient(to top, rgba(0,0,0,0.7), transparent)',
+                                                pointerEvents: 'none'
+                                            }}></div>
+                                        </>
+                                    ) : (
+                                        <div style={{
+                                            width: '100%',
+                                            height: '350px',
+                                            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            fontSize: '64px'
+                                        }}>
+                                            📚
+                                        </div>
+                                    )}
+                                    
+                                    {/* Status Badge - Top Right */}
+                                    <div style={{
+                                        position: 'absolute',
+                                        top: '12px',
+                                        right: '12px',
                                         backgroundColor: 
-                                            book.status === 'completed' ? '#d4edda' :
-                                            book.status === 'reading' ? '#fff3cd' : '#d1ecf1',
-                                        color: 
-                                            book.status === 'completed' ? '#155724' :
-                                            book.status === 'reading' ? '#856404' : '#0c5460',
-                                        padding: '3px 8px',
-                                        borderRadius: '4px',
-                                        fontSize: '13px'
+                                            book.status === 'completed' ? '#10b981' :
+                                            book.status === 'reading' ? '#f59e0b' : '#3b82f6',
+                                        color: 'white',
+                                        padding: '6px 12px',
+                                        borderRadius: '20px',
+                                        fontSize: '12px',
+                                        fontWeight: '600',
+                                        textTransform: 'uppercase',
+                                        letterSpacing: '0.5px',
+                                        boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
                                     }}>
-                                        {book.status.replace('_', ' ')}
-                                    </span>
-                                </p>
-                                {book.page_count && <p style={{ marginBottom: '10px' }}><strong>Pages:</strong> {book.page_count}</p>}
-                                
-                                <div style={{ marginTop: '15px', display: 'flex', gap: '5px' }}>
-                                    <button 
-                                        onClick={() => handleEdit(book)}
-                                        style={{ 
-                                            flex: 1,
-                                            padding: '8px 10px', 
-                                            backgroundColor: '#ffc107', 
-                                            border: 'none',
-                                            cursor: 'pointer',
-                                            borderRadius: '5px',
-                                            fontWeight: '500'
-                                        }}
-                                    >
-                                           Edit
-                                    </button>
-                                    <button 
-                                        onClick={() => handleDelete(book.id, book.title)}
-                                        style={{ 
-                                            flex: 1,
-                                            padding: '8px 10px', 
-                                            backgroundColor: '#dc3545', 
-                                            color: 'white',
-                                            border: 'none',
-                                            cursor: 'pointer',
-                                            borderRadius: '5px',
-                                            fontWeight: '500'
-                                        }}
-                                    >
-                                           Delete
-                                    </button>
+                                        {book.status === 'to_read' ? 'To Read' : 
+                                         book.status === 'reading' ? 'Reading' : 'Done'}
+                                    </div>
+                                </div>
+
+                                {/* Content Section */}
+                                <div style={{ padding: '20px' }}>
+                                    {/* Title */}
+                                    <h3 style={{ 
+                                        fontSize: '20px', 
+                                        fontWeight: '700',
+                                        marginBottom: '8px',
+                                        lineHeight: '1.3',
+                                        color: '#1f2937',
+                                        display: '-webkit-box',
+                                        WebkitLineClamp: 2,
+                                        WebkitBoxOrient: 'vertical',
+                                        overflow: 'hidden'
+                                    }}>
+                                        {book.title}
+                                    </h3>
+                                    
+                                    {/* Author */}
+                                    <p style={{ 
+                                        marginBottom: '12px',
+                                        color: '#6b7280',
+                                        fontSize: '15px',
+                                        fontWeight: '500'
+                                    }}>
+                                        by {book.author}
+                                    </p>
+
+                                    {/* Divider */}
+                                    <div style={{
+                                        height: '1px',
+                                        backgroundColor: '#e5e7eb',
+                                        margin: '12px 0'
+                                    }}></div>
+
+                                    {/* Genre Tag */}
+                                    <div style={{ marginBottom: '12px' }}>
+                                        <span style={{
+                                            display: 'inline-block',
+                                            backgroundColor: '#eff6ff',
+                                            color: '#1e40af',
+                                            padding: '6px 12px',
+                                            borderRadius: '6px',
+                                            fontSize: '13px',
+                                            fontWeight: '600',
+                                            textTransform: 'capitalize'
+                                        }}>
+                                            {book.genre.replace('_', ' ')}
+                                        </span>
+                                    </div>
+
+                                    {/* Page Count */}
+                                    {book.page_count && (
+                                        <p style={{ 
+                                            marginBottom: '16px',
+                                            color: '#9ca3af',
+                                            fontSize: '14px',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '6px'
+                                        }}>
+                                            <span>📄</span> {book.page_count} pages
+                                        </p>
+                                    )}
+                                    
+                                    {/* Action Buttons */}
+                                    <div style={{ 
+                                        display: 'flex', 
+                                        gap: '8px',
+                                        marginTop: '16px'
+                                    }}>
+                                        <button 
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleEdit(book);
+                                            }}
+                                            style={{ 
+                                                flex: 1,
+                                                padding: '10px 16px', 
+                                                backgroundColor: '#fbbf24',
+                                                color: '#78350f',
+                                                border: 'none',
+                                                cursor: 'pointer',
+                                                borderRadius: '8px',
+                                                fontWeight: '600',
+                                                fontSize: '14px',
+                                                transition: 'all 0.2s',
+                                                boxShadow: '0 2px 4px rgba(251, 191, 36, 0.2)'
+                                            }}
+                                            onMouseEnter={(e) => {
+                                                e.currentTarget.style.backgroundColor = '#f59e0b';
+                                                e.currentTarget.style.transform = 'translateY(-2px)';
+                                                e.currentTarget.style.boxShadow = '0 4px 8px rgba(251, 191, 36, 0.3)';
+                                            }}
+                                            onMouseLeave={(e) => {
+                                                e.currentTarget.style.backgroundColor = '#fbbf24';
+                                                e.currentTarget.style.transform = 'translateY(0)';
+                                                e.currentTarget.style.boxShadow = '0 2px 4px rgba(251, 191, 36, 0.2)';
+                                            }}
+                                        >
+                                               Edit
+                                        </button>
+                                        <button 
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleDelete(book.id, book.title);
+                                            }}
+                                            style={{ 
+                                                flex: 1,
+                                                padding: '10px 16px', 
+                                                backgroundColor: '#ef4444',
+                                                color: 'white',
+                                                border: 'none',
+                                                cursor: 'pointer',
+                                                borderRadius: '8px',
+                                                fontWeight: '600',
+                                                fontSize: '14px',
+                                                transition: 'all 0.2s',
+                                                boxShadow: '0 2px 4px rgba(239, 68, 68, 0.2)'
+                                            }}
+                                            onMouseEnter={(e) => {
+                                                e.currentTarget.style.backgroundColor = '#dc2626';
+                                                e.currentTarget.style.transform = 'translateY(-2px)';
+                                                e.currentTarget.style.boxShadow = '0 4px 8px rgba(239, 68, 68, 0.3)';
+                                            }}
+                                            onMouseLeave={(e) => {
+                                                e.currentTarget.style.backgroundColor = '#ef4444';
+                                                e.currentTarget.style.transform = 'translateY(0)';
+                                                e.currentTarget.style.boxShadow = '0 2px 4px rgba(239, 68, 68, 0.2)';
+                                            }}
+                                        >
+                                               Delete
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         ))}
