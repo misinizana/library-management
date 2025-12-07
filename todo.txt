@@ -3,7 +3,12 @@ today 06/12/2025
 - add better handling for user specific questions
 - add better handling for when user says "me" (admin and normal user)
 - format the text better so that it shows up as it should, and not the table from the raw sql but like a table provided by gpt probably, but add as extra not deleting stuff we  already have
+- completely change and make chatbot work good
+- make books on dashboard pop
+- testing
+-LLM queries are strictly confined to their own books (enforced by a WHERE user_id = [user_id] filter and security validation).
 
+MAKE SURE THAT THE LAST POINT IS ACTUALLY HAPPENING
 
 tomorrow 07/12/2025:
 
