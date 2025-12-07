@@ -279,9 +279,7 @@ const Dashboard = () => {
                             </div>
                         )}
 
-                        {searchResults.length === 0 && searchQuery && !searching && (
-                            <p>No results found. Try a different search term.</p>
-                        )}
+                        
                     </div>
                 )}
 

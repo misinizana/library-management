@@ -28,7 +28,6 @@ services:
     ports:
       - "8000:8000"
     environment:
-      # Change these to match settings.py
       DB_HOST: db
       DB_NAME: library_db
       DB_USER: user
@@ -41,7 +40,7 @@ services:
     depends_on:
       db:
         condition: service_healthy
-    command: sh -c "python manage.py makemigrations && python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
+    command: sh -c "python manage.py makemigrations && python manage.py migrate && python manage.py create_default_admin && python manage.py runserver 0.0.0.0:8000"
 
   frontend:
     build: 

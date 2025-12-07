@@ -60,3 +60,21 @@ def get_result_formatting_prompt():
     """System prompt for formatting results into natural language"""
     return """Convert database query results into a clear, concise natural language answer.
 Be direct and friendly. Format lists when appropriate."""
+
+
+def get_recommendation_prompt(recent_books):
+    return f"""You are a book recommendation expert.
+
+User's recent books (last month):
+{recent_books}
+
+Task: Recommend 5 books based on their reading patterns.
+- 1-2 from genres they like
+- 1 new genre they might enjoy and a book from it
+
+Return ONLY a JSON array:
+[
+  {{"search_query": "specific book or author name", "reason": "brief reason"}},
+  ...
+]
+"""

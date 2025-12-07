@@ -15,6 +15,7 @@ from .serializers import (
     ConversationDetailSerializer 
 )
 from .llm_service.sql_service import process_query_with_context
+from .llm_service.recommendation_service import generate_recommendations
 from django.db.models import Count, Avg
 from django.utils import timezone
 from datetime import timedelta
@@ -372,3 +373,9 @@ def clear_all_conversations(request):
     return Response({
         'message': f'Successfully deleted {count} conversation(s)'
     })
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_recommendations(request):
+    recommendations = generate_recommendations(request.user)
+    return Response(recommendations)
