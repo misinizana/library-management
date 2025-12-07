@@ -1,5 +1,6 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { login as apiLogin, register as apiRegister } from '../services/api';
+import api from '../services/api';
 
 const AuthContext = createContext();
 
@@ -37,12 +38,12 @@ export const AuthProvider = ({ children }) => {
             localStorage.setItem('refresh_token', data.refresh);
             
             // Fetch user details to get is_admin
-            const userResponse = await fetch('http://127.0.0.1:8000/api/auth/users/me/', {
+            const userResponse = await api.get('/auth/users/me/', {
                 headers: {
                     'Authorization': `Bearer ${data.access}`
                 }
             });
-            const userData = await userResponse.json();
+            const userData = userResponse.data;
             
             // Store complete user info
             localStorage.setItem('user', JSON.stringify(userData));
