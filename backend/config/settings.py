@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 from pathlib import Path
 from dotenv import load_dotenv
 import os
+import re
 
 load_dotenv()
 
@@ -139,6 +140,11 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://localhost:5173",  
     'https://unrivaled-starburst-8d4d54.netlify.app',
+    'https://693575fe1e48344cc0c636ba--unrivaled-starburst-8d4d54.netlify.app',  
+]
+
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    r"^https://.*\.netlify\.app$",  
 ]
 
 REST_FRAMEWORK = {
