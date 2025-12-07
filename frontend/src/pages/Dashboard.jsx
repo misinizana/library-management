@@ -25,7 +25,6 @@ const Dashboard = () => {
     const [searchResults, setSearchResults] = useState([]);
     const [searching, setSearching] = useState(false);
 
-    const { user, logout } = useAuth();
 
     // Fetch books on mount
     useEffect(() => {

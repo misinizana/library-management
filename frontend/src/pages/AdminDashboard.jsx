@@ -49,8 +49,7 @@ const AdminDashboard = () => {
         page_count: '',
     });
 
-    const { user, logout } = useAuth();
-    const navigate = useNavigate();
+    const { user } = useAuth();
 
     useEffect(() => {
         if (activeTab === 'users' && !selectedUser) {
