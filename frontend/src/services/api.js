@@ -140,4 +140,10 @@ export const clearAllConversations = async () => {
     return response.data;
 };
 
+export const getRecommendations = async () => {
+    const response = await api.get('/recommendations/');
+    return response.data;
+};
+
+
 export default api;

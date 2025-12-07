@@ -14,7 +14,8 @@ from .views import (
     conversation_list,           
     conversation_detail,         
     send_message,               
-    clear_all_conversations      
+    clear_all_conversations,
+    get_book_recommendations    
 )
 
 router = DefaultRouter()
@@ -32,6 +33,7 @@ urlpatterns = [
     path('conversations/<int:pk>/', conversation_detail, name='conversation-detail'),
     path('conversations/<int:pk>/message/', send_message, name='send-message'),
     path('conversations/clear/', clear_all_conversations, name='clear-conversations'),
+    path('recommendations/', get_book_recommendations, name='recommendations'),
     
     # Admin - Books
     path('admin/books/', admin_get_all_books, name='admin-books'),

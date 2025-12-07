@@ -27,7 +27,7 @@ def generate_sql_query(question, user, conversation_history=None):
     """
     # Get appropriate prompt based on user role
     if user.is_admin:
-        system_prompt = get_sql_generation_prompt_for_admin()
+        system_prompt = get_sql_generation_prompt_for_admin(user.id)
     else:
         system_prompt = get_sql_generation_prompt_for_user(user.id)
     
@@ -170,7 +170,6 @@ def validate_sql_query(sql, user):
     # All checks passed
     return True, None
 
-
 def execute_sql_query(sql):
     """
     Execute SQL query safely and return results
@@ -180,11 +179,12 @@ def execute_sql_query(sql):
     
     Returns:
         list: List of dictionaries with query results
-              [{"column1": value1, "column2": value2}, ...]
     
     Raises:
         Exception: If query execution fails
     """
+    from decimal import Decimal  # ADD THIS IMPORT
+    
     try:
         with connection.cursor() as cursor:
             cursor.execute(sql)
@@ -200,10 +200,15 @@ def execute_sql_query(sql):
             for row in rows:
                 result_dict = {}
                 for i, column in enumerate(columns):
-                    # Convert datetime objects to strings for JSON serialization
                     value = row[i]
-                    if hasattr(value, 'isoformat'):  # datetime object
+                    
+                    # Convert datetime objects to strings
+                    if hasattr(value, 'isoformat'):
                         value = value.isoformat()
+                    # Convert Decimal to float - ADD THIS
+                    elif isinstance(value, Decimal):
+                        value = float(value)
+                    
                     result_dict[column] = value
                 results.append(result_dict)
             
@@ -211,7 +216,8 @@ def execute_sql_query(sql):
             
     except Exception as e:
         raise Exception(f"SQL execution error: {str(e)}")
-
+    
+    
 
 def format_results_with_llm(question, sql, results, conversation_history=None):
     """

@@ -374,8 +374,22 @@ def clear_all_conversations(request):
         'message': f'Successfully deleted {count} conversation(s)'
     })
 
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-def get_recommendations(request):
-    recommendations = generate_recommendations(request.user)
-    return Response(recommendations)
+def get_book_recommendations(request):
+    """
+    Get AI-powered book recommendations for the current user
+    Based on their recent reading history
+    """
+    result = generate_recommendations(request.user)
+    
+    if result['success']:
+        return Response({
+            'recommendations': result['recommendations']
+        })
+    else:
+        return Response(
+            {'error': result['error']},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )

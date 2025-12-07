@@ -79,3 +79,10 @@ class ConversationDetailSerializer(serializers.ModelSerializer):
     
     def get_message_count(self, obj):
         return obj.messages.count()
+    
+class RecommendationSerializer(serializers.Serializer):
+    """Serializer for book recommendations"""
+    book = serializers.DictField()
+    ai_reason = serializers.CharField()
+    expected_genre = serializers.CharField()
+    search_query = serializers.CharField()

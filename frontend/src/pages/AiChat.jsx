@@ -36,14 +36,14 @@ const AiChat = () => {
     const { user } = useAuth();
 
     const exampleQuestions = user?.is_admin ? [
-        "Who owns the most books?",
+        "Summarize reading habits of user with most books",
         "What's the most popular book?",
         "How many users are registered?",
         "Which genre is most popular?",
         "How many users have zero books?",
     ] : [
+        "Summarize my reading habits",
         "How many books do I have?",
-        "Show me all my books",
         "What books am I currently reading?",
         "What's my favorite genre?",
         "List my completed books",
