@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { getBooks, createBook, updateBook, deleteBook, searchBooksExternal, getRecommendations } from '../services/api';
 import Navbar from '../components/Navbar';
+import ConfirmDialog from '../components/ConfirmDialog';  
 
 const Dashboard = () => {
     const [books, setBooks] = useState([]);
@@ -28,6 +29,18 @@ const Dashboard = () => {
     // Recommendations state
     const [recommendations, setRecommendations] = useState([]);
     const [loadingRecommendations, setLoadingRecommendations] = useState(false);
+
+    // Filter state
+    const [filterGenre, setFilterGenre] = useState('all');
+    const [filterStatus, setFilterStatus] = useState('all');
+
+    // Confirm Dialog state
+    const [confirmDialog, setConfirmDialog] = useState({
+        isOpen: false,
+        title: '',
+        message: '',
+        onConfirm: () => {}
+    });
 
     // Fetch books and recommendations on mount
     useEffect(() => {
@@ -115,17 +128,24 @@ const Dashboard = () => {
         window.scrollTo(0, 0);
     };
 
-    const handleDelete = async (id) => {
-        if (window.confirm('Are you sure you want to delete this book?')) {
-            try {
-                await deleteBook(id);
-                fetchBooks();
-                fetchRecommendations(); // Refresh recommendations after deleting book
-            } catch (err) {
-                setError('Failed to delete book');
-                console.error(err);
+    const handleDelete = (id, bookTitle) => {
+        setConfirmDialog({
+            isOpen: true,
+            title: 'Delete Book',
+            message: `Are you sure you want to delete "${bookTitle}"? This action cannot be undone.`,
+            onConfirm: async () => {
+                try {
+                    await deleteBook(id);
+                    fetchBooks();
+                    fetchRecommendations(); // Refresh recommendations after deleting book
+                    setConfirmDialog({ ...confirmDialog, isOpen: false });
+                } catch (err) {
+                    setError('Failed to delete book');
+                    console.error(err);
+                    setConfirmDialog({ ...confirmDialog, isOpen: false });
+                }
             }
-        }
+        });
     };
 
     const handleCancel = () => {
@@ -181,6 +201,23 @@ const Dashboard = () => {
         window.scrollTo(0, 0);
     };
 
+    // Filter books based on selected genre and status
+    const getFilteredBooks = () => {
+        let filtered = [...books];
+        
+        if (filterGenre !== 'all') {
+            filtered = filtered.filter(book => book.genre === filterGenre);
+        }
+        
+        if (filterStatus !== 'all') {
+            filtered = filtered.filter(book => book.status === filterStatus);
+        }
+        
+        return filtered;
+    };
+
+    const filteredBooks = getFilteredBooks();
+
     if (loading) return <div>Loading...</div>;
 
     return (
@@ -227,7 +264,7 @@ const Dashboard = () => {
 
                 {/* Search Books Section */}
                 {showSearch && (
-                    <div style={{ border: '1px solid #ccc', padding: '20px', marginBottom: '20px', borderRadius: '8px' }}>
+                    <div style={{ border: '1px solid #ccc', padding: '20px', marginBottom: '20px', borderRadius: '8px', backgroundColor: '#f8f9fa' }}>
                         <h3>Search Books Online</h3>
                         <form onSubmit={handleSearch} style={{ marginBottom: '20px' }}>
                             <input
@@ -245,9 +282,10 @@ const Dashboard = () => {
                                     backgroundColor: '#007bff', 
                                     color: 'white', 
                                     border: 'none',
-                                    cursor: 'pointer',
+                                    cursor: searching ? 'not-allowed' : 'pointer',
                                     marginRight: '10px',
-                                    borderRadius: '5px'
+                                    borderRadius: '5px',
+                                    opacity: searching ? 0.6 : 1
                                 }}
                             >
                                 {searching ? 'Searching...' : 'Search'}
@@ -282,7 +320,8 @@ const Dashboard = () => {
                                                 padding: '10px', 
                                                 cursor: 'pointer',
                                                 transition: 'transform 0.2s',
-                                                borderRadius: '8px'
+                                                borderRadius: '8px',
+                                                backgroundColor: 'white'
                                             }}
                                             onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
                                             onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
@@ -297,7 +336,7 @@ const Dashboard = () => {
                                             <h4 style={{ fontSize: '14px', marginBottom: '5px' }}>{book.title}</h4>
                                             <p style={{ fontSize: '12px', color: '#666' }}>{book.author}</p>
                                             {book.page_count > 0 && (
-                                                <p style={{ fontSize: '11px', color: '#999' }}>{book.page_count} pages</p>
+                                                <p style={{ fontSize: '11px', color: '#999' }}>📖 {book.page_count} pages</p>
                                             )}
                                         </div>
                                     ))}
@@ -309,7 +348,7 @@ const Dashboard = () => {
 
                 {/* Add/Edit Book Form */}
                 {showForm && (
-                    <div style={{ border: '1px solid #ccc', padding: '20px', marginBottom: '20px', borderRadius: '8px' }}>
+                    <div style={{ border: '1px solid #ccc', padding: '20px', marginBottom: '20px', borderRadius: '8px', backgroundColor: '#f8f9fa' }}>
                         <h3>{editingBook ? 'Edit Book' : 'Add New Book'}</h3>
                         <form onSubmit={handleSubmit}>
                             <div style={{ marginBottom: '10px' }}>
@@ -389,7 +428,7 @@ const Dashboard = () => {
                             </div>
 
                             <div style={{ marginBottom: '10px' }}>
-                                <label>Description (optional):</label>
+                                <label>Description (optional)</label>
                                 <textarea
                                     name="description"
                                     value={formData.description}
@@ -400,7 +439,7 @@ const Dashboard = () => {
                             </div>
 
                             <div style={{ marginBottom: '10px' }}>
-                                <label>Page Count *</label>
+                                <label>Page Count</label>
                                 <input
                                     type="number"
                                     name="page_count"
@@ -442,7 +481,7 @@ const Dashboard = () => {
                     </div>
                 )}
 
-                {/* Recommendations Section - BEFORE My Books */}
+                {/* Recommendations Section */}
                 {books.length === 0 && !loadingRecommendations && (
                     <div style={{ 
                         padding: '40px 20px', 
@@ -546,20 +585,126 @@ const Dashboard = () => {
                 )}
 
                 {/* Books List */}
-                <h2>My Books ({books.length})</h2>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                    <h2>My Books ({filteredBooks.length}{books.length !== filteredBooks.length ? ` of ${books.length}` : ''})</h2>
+                    
+                    {/* Filter Controls */}
+                    {books.length > 0 && (
+                        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                            <label style={{ fontSize: '14px', fontWeight: '500' }}>Filter by:</label>
+                            
+                            <select
+                                value={filterGenre}
+                                onChange={(e) => setFilterGenre(e.target.value)}
+                                style={{
+                                    padding: '8px 12px',
+                                    borderRadius: '5px',
+                                    border: '1px solid #ccc',
+                                    cursor: 'pointer',
+                                    fontSize: '14px'
+                                }}
+                            >
+                                <option value="all">All Genres</option>
+                                <option value="fiction">Fiction</option>
+                                <option value="non_fiction">Non-Fiction</option>
+                                <option value="mystery">Mystery</option>
+                                <option value="sci_fi">Science Fiction</option>
+                                <option value="fantasy">Fantasy</option>
+                                <option value="biography">Biography</option>
+                                <option value="history">History</option>
+                                <option value="other">Other</option>
+                            </select>
+                            
+                            <select
+                                value={filterStatus}
+                                onChange={(e) => setFilterStatus(e.target.value)}
+                                style={{
+                                    padding: '8px 12px',
+                                    borderRadius: '5px',
+                                    border: '1px solid #ccc',
+                                    cursor: 'pointer',
+                                    fontSize: '14px'
+                                }}
+                            >
+                                <option value="all">All Status</option>
+                                <option value="to_read">To Read</option>
+                                <option value="reading">Reading</option>
+                                <option value="completed">Completed</option>
+                            </select>
+
+                            {(filterGenre !== 'all' || filterStatus !== 'all') && (
+                                <button
+                                    onClick={() => {
+                                        setFilterGenre('all');
+                                        setFilterStatus('all');
+                                    }}
+                                    style={{
+                                        padding: '8px 12px',
+                                        backgroundColor: '#dc3545',
+                                        color: 'white',
+                                        border: 'none',
+                                        borderRadius: '5px',
+                                        cursor: 'pointer',
+                                        fontSize: '14px'
+                                    }}
+                                >
+                                    Clear Filters
+                                </button>
+                            )}
+                        </div>
+                    )}
+                </div>
                 
-                {books.length === 0 ? (
+                {filteredBooks.length === 0 && books.length > 0 ? (
+                    <div style={{ 
+                        padding: '40px 20px', 
+                        textAlign: 'center', 
+                        backgroundColor: '#f8f9fa', 
+                        borderRadius: '10px'
+                    }}>
+                        <h3 style={{ marginBottom: '10px' }}>No books match your filters</h3>
+                        <p style={{ color: '#666' }}>
+                            Try changing your filter options or{' '}
+                            <button
+                                onClick={() => {
+                                    setFilterGenre('all');
+                                    setFilterStatus('all');
+                                }}
+                                style={{
+                                    background: 'none',
+                                    border: 'none',
+                                    color: '#007bff',
+                                    textDecoration: 'underline',
+                                    cursor: 'pointer',
+                                    padding: 0,
+                                    fontSize: '16px'
+                                }}
+                            >
+                                clear all filters
+                            </button>
+                        </p>
+                    </div>
+                ) : filteredBooks.length === 0 ? (
                     <p>No books yet. Search for books online or add one manually!</p>
                 ) : (
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '20px' }}>
-                        {books.map((book) => (
+                        {filteredBooks.map((book) => (
                             <div 
                                 key={book.id} 
                                 style={{ 
                                     border: '1px solid #ddd', 
                                     padding: '15px', 
                                     borderRadius: '8px',
-                                    backgroundColor: 'white'
+                                    backgroundColor: 'white',
+                                    transition: 'transform 0.2s, box-shadow 0.2s'
+                                }}
+                                onMouseEnter={(e) => {
+                                    e.currentTarget.style.transform = 'translateY(-5px)';
+                                    e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)';
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.currentTarget.style.transform = 'translateY(0)';
+                                    e.currentTarget.style.boxShadow = 'none';
                                 }}
                             >
                                 {book.cover_image && (
@@ -569,38 +714,66 @@ const Dashboard = () => {
                                         style={{ width: '100%', height: '300px', objectFit: 'cover', marginBottom: '10px', borderRadius: '5px' }}
                                     />
                                 )}
-                                <h3 style={{ fontSize: '18px' }}>{book.title}</h3>
-                                <p><strong>Author:</strong> {book.author}</p>
-                                <p><strong>Genre:</strong> {book.genre}</p>
-                                <p><strong>Status:</strong> {book.status}</p>
-                                {book.page_count && <p><strong>Pages:</strong> {book.page_count}</p>}
+                                <h3 style={{ fontSize: '18px', marginBottom: '8px' }}>{book.title}</h3>
+                                <p style={{ marginBottom: '5px' }}><strong>Author:</strong> {book.author}</p>
+                                <p style={{ marginBottom: '5px' }}>
+                                    <strong>Genre:</strong>{' '}
+                                    <span style={{
+                                        backgroundColor: '#e7f3ff',
+                                        padding: '3px 8px',
+                                        borderRadius: '4px',
+                                        fontSize: '13px'
+                                    }}>
+                                        {book.genre.replace('_', ' ')}
+                                    </span>
+                                </p>
+                                <p style={{ marginBottom: '5px' }}>
+                                    <strong>Status:</strong>{' '}
+                                    <span style={{
+                                        backgroundColor: 
+                                            book.status === 'completed' ? '#d4edda' :
+                                            book.status === 'reading' ? '#fff3cd' : '#d1ecf1',
+                                        color: 
+                                            book.status === 'completed' ? '#155724' :
+                                            book.status === 'reading' ? '#856404' : '#0c5460',
+                                        padding: '3px 8px',
+                                        borderRadius: '4px',
+                                        fontSize: '13px'
+                                    }}>
+                                        {book.status.replace('_', ' ')}
+                                    </span>
+                                </p>
+                                {book.page_count && <p style={{ marginBottom: '10px' }}><strong>Pages:</strong> {book.page_count}</p>}
                                 
-                                <div style={{ marginTop: '10px' }}>
+                                <div style={{ marginTop: '15px', display: 'flex', gap: '5px' }}>
                                     <button 
                                         onClick={() => handleEdit(book)}
                                         style={{ 
-                                            padding: '5px 10px', 
+                                            flex: 1,
+                                            padding: '8px 10px', 
                                             backgroundColor: '#ffc107', 
                                             border: 'none',
-                                            marginRight: '5px',
                                             cursor: 'pointer',
-                                            borderRadius: '5px'
+                                            borderRadius: '5px',
+                                            fontWeight: '500'
                                         }}
                                     >
-                                        Edit
+                                           Edit
                                     </button>
                                     <button 
-                                        onClick={() => handleDelete(book.id)}
+                                        onClick={() => handleDelete(book.id, book.title)}
                                         style={{ 
-                                            padding: '5px 10px', 
+                                            flex: 1,
+                                            padding: '8px 10px', 
                                             backgroundColor: '#dc3545', 
                                             color: 'white',
                                             border: 'none',
                                             cursor: 'pointer',
-                                            borderRadius: '5px'
+                                            borderRadius: '5px',
+                                            fontWeight: '500'
                                         }}
                                     >
-                                        Delete
+                                           Delete
                                     </button>
                                 </div>
                             </div>
@@ -608,6 +781,15 @@ const Dashboard = () => {
                     </div>
                 )}
             </div>
+
+            {/* Confirm Dialog */}
+            <ConfirmDialog
+                isOpen={confirmDialog.isOpen}
+                title={confirmDialog.title}
+                message={confirmDialog.message}
+                onConfirm={confirmDialog.onConfirm}
+                onCancel={() => setConfirmDialog({ ...confirmDialog, isOpen: false })}
+            />
         </div>
     );
 };

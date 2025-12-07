@@ -140,12 +140,7 @@ def generate_recommendations(user):
         # Step 1: Get user's recent reading history
         recent_books = get_recent_books(user)
         
-        if not recent_books:
-            return {
-                "success": True,
-                "recommendations": [],
-                "error": None
-            }
+
         # Step 2: Generate recommendation prompts using LLM
         prompt = get_recommendation_prompt(recent_books)
         
