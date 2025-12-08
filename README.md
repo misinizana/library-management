@@ -140,4 +140,20 @@ My free key is included in the deployed version. Keep in mind, it could run out 
 Cost: ~$0.0002 per query (GPT-4o-mini)
 
 ---
+
+## Screenshots
+<img width="1334" height="629" alt="image" src="https://github.com/user-attachments/assets/a1366172-a35f-443e-bf02-d9a612a181d7" />
+
+<img width="1180" height="632" alt="image" src="https://github.com/user-attachments/assets/f32995a2-eda0-41ba-8bc6-779d83762bd2" />
+
+<img width="1349" height="605" alt="image" src="https://github.com/user-attachments/assets/032f55ac-bbae-4494-909f-15ef21d27158" />
+
+<img width="1298" height="635" alt="image" src="https://github.com/user-attachments/assets/585616b6-f1b1-422a-b003-8f55650638a4" />
+
+<img width="1329" height="630" alt="image" src="https://github.com/user-attachments/assets/37bd05c1-a968-4ae9-93d4-9e413b694038" />
+
+etc...
+---
+Made with ☕ and Claude
+
 Made with ☕ and Claude
