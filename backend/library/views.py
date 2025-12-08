@@ -349,7 +349,7 @@ def send_message(request, pk):
         return Response(serializer.data)
     else:
         # Create an assistant error message so user sees it in the chat
-        error_content = f"I apologize, but that request cannot be completed:\n\n{result['error']}\n\nPlease try rephrasing your question or ask something else!"
+        error_content = f"I apologize, but that request cannot be completed. Please try rephrasing your question or ask something else!"
         
         assistant_message = ChatMessage.objects.create(
             conversation=conversation,
