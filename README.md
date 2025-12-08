@@ -20,6 +20,7 @@ Full-stack library app with AI chat and book recommendations. Users manage their
 ## 🚀 Quick Start
 # You can run the app locally using Docker
 ⚠️**Switch to `dev` branch**
+You need an OpenRouter api key in your .env to run the app locally.
 ```bash
 # 1. Clone repo
 git clone https://github.com/misinizana/library-management.git
@@ -70,7 +71,7 @@ Access on https://localhost:3000
 
 ### 👤 User Features
 - Add books manually or search Google Books API
-- Edit/delete books with confirmation dialogs
+- Edit/delete books
 - Filter by genre and reading status
 - **AI Chat:** Ask questions about your library ("What am I reading?", "Summarize my reading habits")
 - **AI Recommendations:** Get 3-5 personalized suggestions based on last 30 days (3 similar genres + 2 new ones)
@@ -85,13 +86,13 @@ Access on https://localhost:3000
 
 ## 🤖 AI Architecture
 
-**Why one LLM service for both features?**  
-Both AI Chat and Recommendations share `llm_service/` for consistency:
+**Why one chat for "AI Summary / Insights Panel" and "AI Query Agent"**  
+Both the features share the same chat for consistency:
 - **AI Chat:** Natural language → SQL → formatted results
-- **Recommendations:** Analyze reading history → generate search queries → fetch from Google Books
+- **Summaries:** generate queries → analyze reading history →  output summary
 
 **Why SQL generation instead of tools/agents?**  
-With only 2 tables, direct SQL is faster, cheaper, and more transparent. For 10+ tables, I'd use LangChain/function calling.
+With only 2 tables, direct SQL is faster, cheaper, and more transparent. For more tables, I'd use LangChain/function calling.
 
 **Analytics Note:**  
 The dashboard shows basic metrics (genre distribution, popular books, etc.). In production, you'd track engagement metrics like retention, feature usage, recommendation CTR. This is just to demonstrate business intelligence capabilities.
@@ -102,7 +103,6 @@ The dashboard shows basic metrics (genre distribution, popular books, etc.). In 
 
 I know this is missing several production requirements due to time constraints:
 
-- ❌ **No tests** (unit/integration/E2E) - critical for production
 - ❌ **No rate limiting** on AI endpoints - API cost risk
 - ❌ **No pagination** - will break with 1000+ books  
 - ❌ **Inline styles** everywhere - hard to maintain
@@ -154,6 +154,4 @@ Cost: ~$0.0002 per query (GPT-4o-mini)
 
 etc...
 ---
-Made with ☕ and Claude
-
 Made with ☕ and Claude
