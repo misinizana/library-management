@@ -18,9 +18,11 @@ import {
     CartesianGrid, Tooltip, Legend, 
     ResponsiveContainer 
 } from 'recharts';
+import ConfirmDialog from '../components/ConfirmDialog';
 
 // Colors for pie chart
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82ca9d', '#ffc658', '#ff7c7c'];
+
 
 const AdminDashboard = () => {
     const [activeTab, setActiveTab] = useState('users'); // 'users' or 'analytics'
@@ -46,6 +48,13 @@ const AdminDashboard = () => {
         cover_image: '',
         description: '',
         page_count: '',
+    });
+
+    const [confirmDialog, setConfirmDialog] = useState({
+        isOpen: false,
+        title: '',
+        message: '',
+        onConfirm: () => {}
     });
 
     const { user } = useAuth();
@@ -135,16 +144,23 @@ const AdminDashboard = () => {
         }
     };
 
-    const handleDeleteUser = async (userId) => {
-        if (window.confirm('Are you sure you want to delete this user? This will also delete all their books.')) {
-            try {
-                await adminDeleteUser(userId);
-                handleBackToList();
-            } catch (err) {
-                setError('Failed to delete user');
-                console.error(err);
+    const handleDeleteUser = (userId, username) => {
+        setConfirmDialog({
+            isOpen: true,
+            title: 'Delete User',
+            message: `Are you sure you want to delete user "${username}"? This will permanently delete all their books and data. This action cannot be undone.`,
+            onConfirm: async () => {
+                try {
+                    await adminDeleteUser(userId);
+                    setConfirmDialog({ ...confirmDialog, isOpen: false });
+                    handleBackToList();
+                } catch (err) {
+                    setError('Failed to delete user');
+                    console.error(err);
+                    setConfirmDialog({ ...confirmDialog, isOpen: false });
+                }
             }
-        }
+        });
     };
 
     // Book Edit
@@ -180,16 +196,23 @@ const AdminDashboard = () => {
         }
     };
 
-    const handleDeleteBook = async (bookId) => {
-        if (window.confirm('Are you sure you want to delete this book?')) {
-            try {
-                await adminDeleteBook(bookId);
-                handleViewUser(selectedUser.id);
-            } catch (err) {
-                setError('Failed to delete book');
-                console.error(err);
+    const handleDeleteBook = (bookId, bookTitle) => {
+        setConfirmDialog({
+            isOpen: true,
+            title: 'Delete Book',
+            message: `Are you sure you want to delete "${bookTitle}"? This will permanently remove it from the user's library. This action cannot be undone.`,
+            onConfirm: async () => {
+                try {
+                    await adminDeleteBook(bookId);
+                    setConfirmDialog({ ...confirmDialog, isOpen: false });
+                    handleViewUser(selectedUser.id);
+                } catch (err) {
+                    setError('Failed to delete book');
+                    console.error(err);
+                    setConfirmDialog({ ...confirmDialog, isOpen: false });
+                }
             }
-        }
+        });
     };
 
     if (!user || !user.is_admin) {
@@ -692,7 +715,7 @@ const AdminDashboard = () => {
                                             Edit User
                                         </button>
                                         <button
-                                            onClick={() => handleDeleteUser(selectedUser.id)}
+                                            onClick={() => handleDeleteUser(selectedUser.id, selectedUser.username)}
                                             style={{
                                                 padding: '10px 20px',
                                                 backgroundColor: '#dc3545',
@@ -845,7 +868,7 @@ const AdminDashboard = () => {
                                                             Edit
                                                         </button>
                                                         <button
-                                                            onClick={() => handleDeleteBook(book.id)}
+                                                            onClick={() => handleDeleteBook(book.id, book.title)}
                                                             style={{
                                                                 padding: '5px 10px',
                                                                 backgroundColor: '#dc3545',
@@ -867,7 +890,15 @@ const AdminDashboard = () => {
                     </div>
                 )}
             </div>
+            <ConfirmDialog
+                isOpen={confirmDialog.isOpen}
+                title={confirmDialog.title}
+                message={confirmDialog.message}
+                onConfirm={confirmDialog.onConfirm}
+                onCancel={() => setConfirmDialog({ ...confirmDialog, isOpen: false })}
+            />
         </div>
+        
     );
 };
 

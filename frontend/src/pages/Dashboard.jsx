@@ -244,7 +244,7 @@ const Dashboard = () => {
                                 borderRadius: '5px'
                             }}
                         >
-                            🔍 Search Books Online
+                               Search Books Online
                         </button>
                         <button 
                             onClick={() => setShowForm(true)}

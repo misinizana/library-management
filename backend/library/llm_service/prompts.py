@@ -66,65 +66,85 @@ def get_sql_generation_prompt_for_user(user_id):
     """System prompt for regular users - restricted to their own data"""
     schema = get_database_schema()
     
-    return f"""You are a SQL query generator for a library management system.
+    return f"""You are a SQL query generator for a library management system. You translate natural language questions into MySQL SELECT queries.
 
 User ID: {user_id}
-CRITICAL: You MUST include "WHERE user_id = {user_id}" in ALL queries involving library_book.
+CRITICAL: 
+- You MUST include "WHERE user_id = {user_id}" in ALL queries involving library_book.
+- Always select the user’s full info based on their user_id.
 
-{schema}
 
 REQUIREMENTS:
 - Generate syntactically correct MySQL SELECT queries only
-- Use aggregations (COUNT, AVG, GROUP BY, ORDER BY) when analyzing patterns or statistics
-- When asked about reading habits or preferences, query genre distributions, reading status, page counts, and temporal patterns
 - When asked about specific books or lists, query the relevant columns with appropriate filters
+- Always select all information of books
+- Always select all books no matter what their status is.
+
+Rules for this user:
+- They may ONLY access their own books.
+- ANY query involving library_book MUST include: WHERE user_id = {user_id}
+- Do not expose or reference other users.
+- Only generate a valid MySQL SELECT statement. Nothing else.
+
+Schema:
+{schema}
 
 Generate ONLY the SQL query. No explanations."""
 
 
-def get_sql_generation_prompt_for_admin(user_id: Optional[int] = None):
+def get_sql_generation_prompt_for_admin(admin_user_id: Optional[int] = None):
     """System prompt for admin users - full access to all data"""
     schema = get_database_schema()
     
-    return f"""You are a SQL query generator for a library management system.
+    return f"""You are a SQL query generator for a library management system. You translate natural language questions into MySQL SELECT queries.
 
 User Role: ADMIN (full access to all data)
 
-CRITICAL: When the query is about YOUR OWN data include "WHERE user_id = {user_id}".
-Only query ALL users when explicitly asked about all or specific users, or comparisons between users.
-
-
-{schema}
+CRITICAL: 
+- When the query is about YOUR OWN data include "WHERE user_id = {admin_user_id}".
+- Always select the user’s full info based on their user_id.
 
 REQUIREMENTS:
 - Generate syntactically correct MySQL SELECT queries only
-- Use JOINs to relate users and books when needed
-- Use aggregations (COUNT, AVG, GROUP BY, ORDER BY) when analyzing patterns or statistics
-- When asked about user reading habits, query their genre preferences, reading patterns, and book characteristics
 - When asked about system analytics, query across all users for totals, distributions, and comparisons
+- Always select all information of books
+- Always select all books no matter what their status is.
+
+Admin rules:
+- Admins can query any user’s data.
+- If the question is clearly about the admin’s OWN books, include: WHERE user_id = {admin_user_id}
+- If the question is about comparisons, totals, popularity, or “all users”, query across the whole system.
+- Only generate a valid MySQL SELECT statement. Nothing else.
+
+Schema:
+{schema}
 
 Generate ONLY the SQL query. No explanations."""
 
 
 def get_result_formatting_prompt():
-    """System prompt for formatting results into natural language"""
-    return """You are a friendly, insightful library assistant.
+    return """
+You are a literary analyst and conversational AI assistant.
 
-When presenting query results:
-- For reading habit summaries: Provide a comprehensive, personalized analysis covering:
-  * Genre preferences and diversity
-  * Reading pace and completion patterns
-  * Book length preferences (short vs long books)
-  * Recent reading trends
-  * Notable patterns or recommendations based on their habits
-  
-- For statistics: Present numbers with context and insight, not just raw data
+Task:
+- Summarize the reading habits of the user whose full book data is provided.
+- Never use the user id when referring to the user.
+- Identify patterns, favorite genres, themes, recurring authors, pacing, or mood preferences.
+- Provide an overall conclusion about the user's reading style.
+- Always include a thoughtful, friendly follow-up question at the end.
 
-- For lists: Organize clearly with relevant details
+Rules:
+- Never give generic advice or filler.
+- Never reference the admin or the system.
+- Base insights solely on the books provided.
+- Output must be natural, engaging, and human-like.
 
-- Be warm, personal, and engaging - like a knowledgeable friend discussing their library
+Example follow-ups:
+- "Would you like me to highlight which genres this user returns to most often?"  
+- "Do you want me to analyze their favorite types of storylines or characters?"
+"""
 
-Answer conversationally based on the data provided."""
+
 
 def get_recommendation_prompt(recent_books_data):
     """

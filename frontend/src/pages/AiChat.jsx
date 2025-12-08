@@ -36,8 +36,7 @@ const AiChat = () => {
     const { user } = useAuth();
 
     const exampleQuestions = user?.is_admin ? [
-        "Summarize reading habits of user with most books",
-        "What's the most popular book?",
+        "How many books were added last week?",
         "How many users are registered?",
         "Which genre is most popular?",
         "How many users have zero books?",
@@ -587,136 +586,6 @@ const AiChat = () => {
                                                         }
                                                     })}
                                                 </div>
-
-                                                {/* Formatted Table */}
-                                                {msg.results && msg.results.length > 0 && isListingData(msg.results) && (
-                                                    <details style={{ marginTop: '15px' }}>
-                                                        <summary style={{ 
-                                                            cursor: 'pointer',
-                                                            fontWeight: 'bold',
-                                                            color: '#666',
-                                                            padding: '5px'
-                                                        }}>
-                                                            📊 View Formatted Table
-                                                        </summary>
-                                                        <div style={{ marginTop: '10px', overflowX: 'auto' }}>
-                                                            <table style={{ 
-                                                                width: '100%', 
-                                                                borderCollapse: 'collapse',
-                                                                backgroundColor: 'white',
-                                                                boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-                                                            }}>
-                                                                <thead>
-                                                                    <tr style={{ backgroundColor: '#28a745', color: 'white' }}>
-                                                                        {Object.keys(msg.results[0]).map((key) => (
-                                                                            <th key={key} style={{ 
-                                                                                padding: '12px', 
-                                                                                textAlign: 'left',
-                                                                                borderBottom: '2px solid #ddd',
-                                                                                fontWeight: '600'
-                                                                            }}>
-                                                                                {formatColumnName(key)}
-                                                                            </th>
-                                                                        ))}
-                                                                    </tr>
-                                                                </thead>
-                                                                <tbody>
-                                                                    {msg.results.map((row, rowIndex) => (
-                                                                        <tr key={rowIndex} style={{ 
-                                                                            backgroundColor: rowIndex % 2 === 0 ? '#f8f9fa' : 'white',
-                                                                            borderBottom: '1px solid #e9ecef'
-                                                                        }}>
-                                                                            {Object.entries(row).map(([key, value], colIndex) => (
-                                                                                <td key={colIndex} style={{ 
-                                                                                    padding: '12px',
-                                                                                    color: '#495057'
-                                                                                }}>
-                                                                                    {formatCellValue(key, value)}
-                                                                                </td>
-                                                                            ))}
-                                                                        </tr>
-                                                                    ))}
-                                                                </tbody>
-                                                            </table>
-                                                        </div>
-                                                    </details>
-                                                )}
-
-                                                {/* SQL Query */}
-                                                {msg.sql_query && (
-                                                    <details style={{ marginTop: '10px' }}>
-                                                        <summary style={{ 
-                                                            cursor: 'pointer',
-                                                            fontWeight: 'bold',
-                                                            color: '#666',
-                                                            padding: '5px'
-                                                        }}>
-                                                            💻 View SQL Query
-                                                        </summary>
-                                                        <pre style={{
-                                                            marginTop: '10px',
-                                                            padding: '15px',
-                                                            backgroundColor: '#1e1e1e',
-                                                            color: '#d4d4d4',
-                                                            borderRadius: '5px',
-                                                            overflow: 'auto',
-                                                            fontSize: '14px'
-                                                        }}>
-                                                            {msg.sql_query}
-                                                        </pre>
-                                                    </details>
-                                                )}
-
-                                                {/* Raw Results */}
-                                                {msg.results && msg.results.length > 0 && (
-                                                    <details style={{ marginTop: '10px' }}>
-                                                        <summary style={{ 
-                                                            cursor: 'pointer',
-                                                            fontWeight: 'bold',
-                                                            color: '#666',
-                                                            padding: '5px'
-                                                        }}>
-                                                            📋 View Raw Data
-                                                        </summary>
-                                                        <div style={{ marginTop: '10px', overflowX: 'auto' }}>
-                                                            <table style={{ 
-                                                                width: '100%', 
-                                                                borderCollapse: 'collapse',
-                                                                backgroundColor: 'white'
-                                                            }}>
-                                                                <thead>
-                                                                    <tr style={{ backgroundColor: '#007bff', color: 'white' }}>
-                                                                        {Object.keys(msg.results[0]).map((key) => (
-                                                                            <th key={key} style={{ 
-                                                                                padding: '10px', 
-                                                                                textAlign: 'left',
-                                                                                border: '1px solid #ddd'
-                                                                            }}>
-                                                                                {key}
-                                                                            </th>
-                                                                        ))}
-                                                                    </tr>
-                                                                </thead>
-                                                                <tbody>
-                                                                    {msg.results.map((row, rowIndex) => (
-                                                                        <tr key={rowIndex} style={{ 
-                                                                            backgroundColor: rowIndex % 2 === 0 ? '#f8f9fa' : 'white' 
-                                                                        }}>
-                                                                            {Object.values(row).map((value, colIndex) => (
-                                                                                <td key={colIndex} style={{ 
-                                                                                    padding: '10px',
-                                                                                    border: '1px solid #ddd'
-                                                                                }}>
-                                                                                    {value !== null && value !== undefined ? String(value) : 'NULL'}
-                                                                                </td>
-                                                                            ))}
-                                                                        </tr>
-                                                                    ))}
-                                                                </tbody>
-                                                            </table>
-                                                        </div>
-                                                    </details>
-                                                )}
                                             </div>
                                         )}
                                     </div>
@@ -789,7 +658,7 @@ const AiChat = () => {
                                         fontWeight: 'bold'
                                     }}
                                 >
-                                    {sendingMessage ? 'Sending...' : 'Ask AI 🔍'}
+                                    {sendingMessage ? 'Sending...' : 'Ask AI'}
                                 </button>
                             </div>
                         </form>

@@ -233,7 +233,7 @@ def format_results_with_llm(question, sql, results, conversation_history=None):
         str: Natural language formatted answer
     """
     if not results:
-        return "No results found for your query."
+        return "Seems like there was no results for your specific question. Do you want to know anything else?"
     
     system_prompt = get_result_formatting_prompt()
     
